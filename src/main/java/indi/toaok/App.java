@@ -1,8 +1,8 @@
-package indi;
+package indi.toaok;
 
 
-import indi.main.NovelDownload;
-import indi.utils.CrawlUtils;
+import indi.toaok.main.NovelDownload;
+import indi.toaok.utils.CrawlUtils;
 
 /**
  * @author Toaok

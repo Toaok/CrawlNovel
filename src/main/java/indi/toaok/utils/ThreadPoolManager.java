@@ -1,4 +1,4 @@
-package indi.utils;
+package indi.toaok.utils;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;

@@ -1,12 +1,12 @@
-package indi.crawl;
+package indi.toaok.crawl;
 
 
 
-import indi.utils.CrawlUtils;
-import indi.utils.GeneratingTXTDocuments;
-import indi.utils.ThreadPoolManager;
-import indi.vo.Chapter;
-import indi.vo.Site;
+import indi.toaok.utils.CrawlUtils;
+import indi.toaok.utils.GeneratingTXTDocuments;
+import indi.toaok.utils.ThreadPoolManager;
+import indi.toaok.vo.Chapter;
+import indi.toaok.vo.Site;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,7 +22,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static indi.utils.CrawlUtils.*;
+import static indi.toaok.utils.CrawlUtils.*;
 
 /**
  * Created by TOAOK on 2017/9/20.
@@ -49,7 +49,7 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
     CrawlNovelFromHtmlImp(Builder builder) {
 
         this.url = builder.url;
-        this.additionalChapter = builder.additionalChapter;
+        this.additionalChapter = builder.additionalChapterNumber;
 
         try {
             cookies = CrawlUtils.getCookies(url);
@@ -71,7 +71,7 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
     public static class Builder {
 
         String url;
-        int additionalChapter;
+        int additionalChapterNumber;
 
         public Builder url(String url) {
             if (url == null || url.equals("")) {
@@ -81,8 +81,8 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
             return this;
         }
 
-        public Builder additionalChapter(int additionalChapter) {
-            this.additionalChapter = additionalChapter;
+        public Builder additionalChapterNumber(int additionalChapter) {
+            this.additionalChapterNumber = additionalChapter;
             return this;
         }
 

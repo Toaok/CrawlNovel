@@ -1,4 +1,4 @@
-package indi.vo;
+package indi.toaok.vo;
 
 /**
  * @author TOAOK

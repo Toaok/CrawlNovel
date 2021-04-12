@@ -1,4 +1,4 @@
-package indi.main;
+package indi.toaok.main;
 
 import javax.swing.*;
 
