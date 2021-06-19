@@ -16,7 +16,7 @@ import java.io.IOException;
  * @author TOAOK
  * @version 1.0  2018/1/8.
  */
-public class MainFrame extends JFrame {
+class MainFrame extends JFrame {
 
     private CrawlNovelFromHtml crawlNovelFromHtml;
 
@@ -25,7 +25,7 @@ public class MainFrame extends JFrame {
     private final static int DEFAULT_MAIN_HEIGHT = DEFAULT_HEIGHT / 12;
     private final static int DEFAULT_LOG_HEIGHT = DEFAULT_HEIGHT / 12*7;
 
-    public MainFrame() throws HeadlessException {
+    MainFrame() throws HeadlessException {
         init();
     }
 

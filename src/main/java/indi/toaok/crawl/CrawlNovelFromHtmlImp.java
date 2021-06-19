@@ -228,7 +228,9 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
                 //重定向到章节内容，获取章节正文
                 dispatcher(number);
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("获取章节:"+mChapters.get(number).getChapterName()+"---异常");
+                run();
+                return;
             }
 
             //获取到内容后进行存储
@@ -241,8 +243,10 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
                         mConditions.get(number).await();
                 }
                 //number==0,存储第一章不需要等待
-                mDocuments.writeDate(chapter.getContent());
-                chapter.setSaved(true);
+                if (chapter.getContent().length() > 0) {
+                    mDocuments.writeDate(chapter.getContent());
+                    chapter.setSaved(true);
+                }
                 if (number < mConditions.size() - 1)
                     mConditions.get(number + 1).signal();
             } catch (Exception e) {
@@ -267,7 +271,6 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                System.exit(0);
             }
             ThreadPoolManager.getInstance().remove(this);
         }
