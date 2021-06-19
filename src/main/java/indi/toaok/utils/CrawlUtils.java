@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author TOAOK
@@ -180,7 +182,7 @@ public class CrawlUtils {
      * @return contentFormat
      */
     public static String contentFormat(String content) {
-        return new String(content.getBytes(StandardCharsets.UTF_8)).replaceAll("     ", "\n\t");
+        return new String(content.getBytes(StandardCharsets.UTF_8)).replaceAll(" ", "\n\t");
     }
 
     public static String getValue(String value, String startStr, int endIndex, String defaultValue) {
@@ -208,5 +210,18 @@ public class CrawlUtils {
         int endIndex = value.indexOf(endStr, startIndex);
         defaultValue = getValue(value, startIndex + startStr.length(), endIndex, defaultValue);
         return defaultValue;
+    }
+
+
+    /**
+     * 获得页面字符
+     */
+    public static String matchCharset(String content) {
+        String chs = "UTF-8";
+        Pattern p = Pattern.compile("(?<=charset=)(.+)(?=\")");
+        Matcher m = p.matcher(content);
+        if (m.find())
+            return m.group().toUpperCase();
+        return chs;
     }
 }

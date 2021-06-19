@@ -10,6 +10,8 @@ public class Site {
 
     public final static String OTHER_SITE = "其他(0)";
 
+    public final static String CHARSET_CSSQUERY = "head>meta";
+
     public final static String[] NAME_CSSQUERY = {
             "div.book>div.info>h2",
             "div#maininfo>div#info>h1"

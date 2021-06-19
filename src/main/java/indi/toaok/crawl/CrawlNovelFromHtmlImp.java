@@ -7,22 +7,20 @@ import indi.toaok.utils.GeneratingTXTDocuments;
 import indi.toaok.utils.ThreadPoolManager;
 import indi.toaok.vo.Chapter;
 import indi.toaok.vo.Site;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.net.URL;
+import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static indi.toaok.utils.CrawlUtils.*;
+import static indi.toaok.utils.CrawlUtils.getPath;
+import static indi.toaok.utils.CrawlUtils.getRootUrl;
 
 /**
  * Created by TOAOK on 2017/9/20.
@@ -44,20 +42,17 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
     private Map<String, String> cookies;//请求cookie
 
     private GeneratingTXTDocuments mDocuments;//生成txt文件
+    private String mCharset;//字符编码
 
 
     CrawlNovelFromHtmlImp(Builder builder) {
 
         this.url = builder.url;
         this.additionalChapter = builder.additionalChapterNumber;
-
+        mCharset=getCharset();
         try {
             cookies = CrawlUtils.getCookies(url);
-            main = Jsoup.connect(this.url)
-                    .userAgent(USER_AGENT[0])
-                    .cookies(cookies)
-                    .timeout(TIME_OUT)
-                    .get();
+            main = Jsoup.parse(new URL(this.url).openStream(),mCharset,this.url);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,6 +86,23 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
         }
     }
 
+    /**
+     * 获得字符集
+     */
+    public String getCharset(){
+        try {
+            URL url = new URL(this.url);
+            Document doc = Jsoup.parse(url, 6*1000);
+            Elements e = doc.select(Site.CHARSET_CSSQUERY);
+            Iterator<Element> it = e.iterator();
+            while (it.hasNext())
+                return CrawlUtils.matchCharset(it.next().toString());
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            return "UTF-8";
+        }
+        return "UTF-8";
+    }
 
     /**
      * 解析html页面，获取章节目录和每个章节的url
@@ -142,15 +154,10 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
         //添加章节名
         chapterBuffer.append(mChapters.get(number).getChapterName());
         chapterBuffer.append(System.getProperty("line.separator"));
+        chapterBuffer.append("\t");
 
         //爬取章节信息
-        Document chapterDoc = Jsoup.connect(mChapters.get(number).getUrl())
-                .method(Connection.Method.GET)
-                .headers(CrawlUtils.getHeader())
-                .userAgent(USER_AGENT[0])
-                .cookies(cookies)
-                .timeout(TIME_OUT)
-                .get();
+        Document chapterDoc =Jsoup.parse(new URL(mChapters.get(number).getUrl()).openStream(),mCharset,mChapters.get(number).getUrl());
         Elements e = chapterDoc.select("div#content");
         //获取章节正文，并格式化。
         String chapterContent = CrawlUtils.contentFormat(e.text());
