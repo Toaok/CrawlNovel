@@ -8,7 +8,7 @@ public interface CrawlNovelFromHtml {
     /**
      * @param filePath 将获取的内容下载到该目录
      */
-    String download(String filePath);
+    void download(String filePath);
     /**
      * 开始下载
      */

@@ -14,6 +14,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -49,13 +50,7 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
 
         this.url = builder.url;
         this.additionalChapter = builder.additionalChapterNumber;
-        mCharset=getCharset();
-        try {
-            cookies = CrawlUtils.getCookies(url);
-            main = Jsoup.parse(new URL(this.url).openStream(),mCharset,this.url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 //        rootUrl = getRootUrl(url);
         mLock = new ReentrantLock();
         mConditions = new ArrayList<>();//创建一个lock数组，为每个章节写入时加锁
@@ -86,23 +81,6 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
         }
     }
 
-    /**
-     * 获得字符集
-     */
-    public String getCharset(){
-        try {
-            URL url = new URL(this.url);
-            Document doc = Jsoup.parse(url, 6*1000);
-            Elements e = doc.select(Site.CHARSET_CSSQUERY);
-            Iterator<Element> it = e.iterator();
-            while (it.hasNext())
-                return CrawlUtils.matchCharset(it.next().toString());
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            return "UTF-8";
-        }
-        return "UTF-8";
-    }
 
     /**
      * 解析html页面，获取章节目录和每个章节的url
@@ -157,7 +135,10 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
         chapterBuffer.append("\t");
 
         //爬取章节信息
-        Document chapterDoc =Jsoup.parse(new URL(mChapters.get(number).getUrl()).openStream(),mCharset,mChapters.get(number).getUrl());
+
+        Document chapterDoc = (mCharset!=null&&!mCharset.equals(""))?
+                Jsoup.parse(new URL(mChapters.get(number).getUrl()).openStream(),mCharset,mChapters.get(number).getUrl())
+                :Jsoup.parse(new URL(mChapters.get(number).getUrl()), 6*1000);
         Elements e = chapterDoc.select("div#content");
         //获取章节正文，并格式化。
         String chapterContent = CrawlUtils.contentFormat(e.text());
@@ -188,21 +169,38 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
     }
 
     @Override
-    public String download(String filePath) {
+    public void download(String filePath) {
         if (filePath == null || filePath.equals("")) {
             filePath = CrawlUtils.getDefaultPath();
         }
-
         System.out.println("文件路径：" + filePath);
+        final String finalFilePath = filePath;
+        ThreadPoolManager.getInstance().execute(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                URL url = new URL(CrawlNovelFromHtmlImp.this.url);
+                Document doc = Jsoup.parse(url, 6*1000);
+                Elements e = doc.select(Site.CHARSET_CSSQUERY);
+                Iterator<Element> it = e.iterator();
+                while (it.hasNext()){
+                    mCharset=CrawlUtils.matchCharset(it.next().toString());
+                    if (Charset.defaultCharset().name().equals(mCharset)) {
+                        main=doc;
+                        mCharset="";
+                    }else {
+                        cookies = CrawlUtils.getCookies(CrawlNovelFromHtmlImp.this.url);
+                        main = Jsoup.parse(url.openStream(),mCharset,CrawlNovelFromHtmlImp.this.url);
+                    }
+                }
+                    mDocuments = new GeneratingTXTDocuments(finalFilePath, getNovelName() + ".txt");
+                    parseHtml();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-        String result = "";
-        try {
-            mDocuments = new GeneratingTXTDocuments(filePath, getNovelName() + ".txt");
-            parseHtml();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
     @Override
