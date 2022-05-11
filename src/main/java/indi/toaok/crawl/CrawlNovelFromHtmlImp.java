@@ -208,7 +208,6 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
-                    e.printStackTrace();
                 }
             }
 
