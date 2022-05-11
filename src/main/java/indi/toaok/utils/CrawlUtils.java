@@ -134,19 +134,23 @@ public class CrawlUtils {
         return cookies;
     }
 
+    static String mRootUrl="";
     public static String getRootUrl(String site) {
         StringBuilder buffer = new StringBuilder();
-        if (!"".equals(site)) {
-            try {
-                URL url = new URL(site);
-                buffer.append(url.getProtocol());
-                buffer.append("://");
-                buffer.append(url.getHost());
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+        if (site != null && !"".equals(site)) {
+            if ("".equals(mRootUrl) || !site.startsWith(mRootUrl)) {
+                try {
+                    URL url = new URL(site);
+                    buffer.append(url.getProtocol());
+                    buffer.append("://");
+                    buffer.append(url.getHost());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                mRootUrl = buffer.toString();
             }
         }
-        return buffer.toString();
+        return mRootUrl;
     }
 
     public static String getPath(String site) {

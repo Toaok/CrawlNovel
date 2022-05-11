@@ -14,11 +14,12 @@ public class Site {
 
     public final static String[] NAME_CSSQUERY = {
             "div.book>div.info>h2",
+            "div.book>div.info>h1",
             "div#maininfo>div#info>h1"
     };
 
     public final static String[] CHAPTER_LIST_CSSQUERY = {
             "div.listmain>dl>dd>a",
-            "div#wrapper>div.box_con>div#list>dl>dd>a"
+            "div#list>dl>dd>a",
     };
 }
