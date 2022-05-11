@@ -88,7 +88,7 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
     private void parseHtml() {
 
         Elements chapters = null;
-        for (String cssQuery : Site.CHAPTER_LIST_CSSQUERY) {
+        for (String cssQuery : Site.CHAPTER_LIST_CSS_QUERY) {
             chapters = main.select(cssQuery);
             if (chapters != null && chapters.size() > 0) {
                 break;
@@ -178,7 +178,7 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
         String novelName = null;
 
         Elements elements = null;
-        for (String cssQuery : Site.NAME_CSSQUERY) {
+        for (String cssQuery : Site.NAME_CSS_QUERY) {
             elements = main.select(cssQuery);
             if (elements != null && elements.size() > 0) {
                 break;
@@ -216,7 +216,7 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
             private void parseDocFromJava()throws Exception{
                 URL url = new URL(CrawlNovelFromHtmlImp.this.url);
                 Document doc = Jsoup.parse(url, 6*1000);
-                Elements e = doc.select(Site.CHARSET_CSSQUERY);
+                Elements e = doc.select(Site.CHARSET_CSS_QUERY);
                 Iterator<Element> it = e.iterator();
                 while (it.hasNext()){
                     mCharset=CrawlUtils.matchCharset(it.next().toString());
