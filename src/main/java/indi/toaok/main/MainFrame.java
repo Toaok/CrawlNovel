@@ -23,7 +23,7 @@ class MainFrame extends JFrame {
     private final static int DEFAULT_WIDTH = 600;
     private final static int DEFAULT_HEIGHT = 400;
     private final static int DEFAULT_MAIN_HEIGHT = DEFAULT_HEIGHT / 12;
-    private final static int DEFAULT_LOG_HEIGHT = DEFAULT_HEIGHT / 12*7;
+    private final static int DEFAULT_LOG_HEIGHT = (int) (DEFAULT_HEIGHT / 12 * 6.5);
 
     MainFrame() throws HeadlessException {
         init();
@@ -39,7 +39,7 @@ class MainFrame extends JFrame {
         //设置窗口属性
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         setLayout(new VerticalFlowLayout(VerticalFlowLayout.TOP));
-        setResizable(false);
+        setResizable(true);
 
         //使窗口居中
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
@@ -114,13 +114,13 @@ class MainFrame extends JFrame {
 
     private void initLogView() {
         JPanel logPanel = new JPanel();
-        logPanel.setPreferredSize(new Dimension(DEFAULT_WIDTH,DEFAULT_LOG_HEIGHT));
+        logPanel.setPreferredSize(new Dimension(DEFAULT_WIDTH/10*9,DEFAULT_LOG_HEIGHT));
         logPanel.setLayout(new BorderLayout());
+        logPanel.setBackground(Color.RED);
         ConsoleTextArea logTextArea = null;
         try {
             logTextArea = new ConsoleTextArea();
-        }
-        catch(IOException e) {
+        } catch(IOException e) {
             System.err.println(
                     "不能创建LoopedStreams：" + e);
             System.exit(1);

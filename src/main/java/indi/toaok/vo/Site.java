@@ -19,5 +19,6 @@ public class Site {
     public final static String[] CHAPTER_LIST_CSS_QUERY = {
             "div.listmain>dl>dd>a",
             "div#list>dl>dd>a",
+            "ul#chapter_list.section-list.fix>li>a"
     };
 }

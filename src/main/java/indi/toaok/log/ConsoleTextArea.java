@@ -14,8 +14,9 @@ import java.util.Date;
 public class ConsoleTextArea extends JTextArea {
     GeneratingTXTDocuments mLogTxt;
     public ConsoleTextArea(InputStream[] inStreams) {
-        for(int i = 0; i < inStreams.length; ++i)
+        for (int i = 0; i < inStreams.length; ++i) {
             startConsoleReaderThread(inStreams[i]);
+        }
     } // ConsoleTextArea()
     public ConsoleTextArea() throws IOException {
         DateFormat format=new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");

@@ -12,7 +12,7 @@ public class ThreadPoolManager {
      * 单例首先私有化构造方法，然后懒汉模式在使用时创建，并提供get方法
      */
 
-    private static class CreateThreadPoolManager{
+    private static class CreateThreadPoolManager {
         private static final ThreadPoolManager mInstance = new ThreadPoolManager();
     }
 
@@ -46,18 +46,41 @@ public class ThreadPoolManager {
     /**
      * 执行任务
      */
-    public void execute(Runnable runnable){
-        if(runnable==null)return;
+    public void execute(Runnable runnable) {
+        if (runnable == null) return;
 
         executor.execute(runnable);
+        showThreadPoolStatus();
         System.gc();
     }
+
     /**
      * 从线程池中移除任务
      */
-    public void remove(Runnable runnable){
-        if(runnable==null)return;
+    public void remove(Runnable runnable) {
+        if (runnable == null) return;
         executor.remove(runnable);
         System.gc();
+        showThreadPoolStatus();
     }
+
+    private void showThreadPoolStatus() {
+        System.out.println();
+        int poolSize = executor.getPoolSize();
+        System.out.println("线程池大小:" + poolSize);
+        int corePoolSize = executor.getCorePoolSize();
+        System.out.println("核心线程数:" + corePoolSize);
+        int maximumPoolSize = executor.getMaximumPoolSize();
+        System.out.println("最大线程数:" + maximumPoolSize);
+        int queueSize = executor.getQueue().size();
+        System.out.println("当前队列线程数:" + queueSize);
+        int activeCount = executor.getActiveCount();
+        System.out.println("当前活动线程数:" + activeCount);
+        long completedTaskCount = executor.getCompletedTaskCount();
+        System.out.println("执行完成线程数:" + completedTaskCount);
+        long taskCount = executor.getTaskCount();
+        System.out.println("总线程数:" + taskCount);
+        System.out.println();
+    }
+
 }
