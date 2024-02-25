@@ -27,7 +27,7 @@ public class ThreadPoolManager {
     private ThreadPoolManager() {
         //给corePoolSize赋值：当前设备可用处理器核心数*2 + 1,能够让cpu的效率得到最大程度执行（有研究论证的）
         //核心线程池的数量，同时能够执行的线程数量
-        int corePoolSize = Runtime.getRuntime().availableProcessors() * 2 + 1;
+        int corePoolSize = 3;
         //最大线程池数量，表示当缓冲队列满的时候能继续容纳的等待任务的数量
         //存活时间
         long keepAliveTime = 1;

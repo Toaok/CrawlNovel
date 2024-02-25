@@ -85,11 +85,11 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
      * 解析html页面，获取章节目录和每个章节的url
      */
     private void parseHtml() {
-
+        System.out.println("解析html,获取小说章节信息...");
         Elements chapters = null;
-        for (String cssQuery : Site.CHAPTER_LIST_CSS_QUERY) {
+        for (String cssQuery : Site.CHAPTERS_LIST_CSS_QUERY) {
             chapters = main.select(cssQuery);
-            if (chapters != null && chapters.size() > 0) {
+            if (chapters.size() > 0) {
                 break;
             }
         }
@@ -116,13 +116,8 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
             mChapters.add(chapter);
             //获取章节类容
             ThreadPoolManager.getInstance().execute(new Task(i));
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
         }
-
+        System.out.println("解析html,获取小说章节信息完成");
     }
 
     /**
@@ -132,7 +127,6 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
      * @throws IOException OI异常
      */
     public void dispatcher(int number) throws IOException {
-
         StringBuilder chapterBuffer = new StringBuilder();
         //添加章节名
         chapterBuffer.append(mChapters.get(number).getChapterName());
@@ -141,44 +135,79 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
 
         //爬取章节信息
 
-        Document chapterDoc = null;
-        try {
-            chapterDoc = (mCharset != null && !mCharset.equals("")) ?
-                    Jsoup.parse(new URL(mChapters.get(number).getUrl()).openStream(), mCharset, mChapters.get(number).getUrl())
-                    : Jsoup.parse(new URL(mChapters.get(number).getUrl()), 6 * 1000);
-        } catch (Exception e) {
-            //爬取章节信息
-            if (cookies != null && cookies.size() > 0) {
-                chapterDoc = Jsoup.connect(mChapters.get(number).getUrl())
-                        .method(Connection.Method.GET)
-                        .headers(CrawlUtils.getHeader())
-                        .userAgent(USER_AGENT[2])
-                        .cookies(cookies)
-                        .timeout(TIME_OUT)
-                        .ignoreContentType(true)
-                        .get();
-            } else {
-                chapterDoc = Jsoup.connect(mChapters.get(number).getUrl())
-                        .method(Connection.Method.GET)
-                        .headers(CrawlUtils.getHeader())
-                        .userAgent(USER_AGENT[0])
-                        .timeout(TIME_OUT)
-                        .ignoreContentType(true)
-                        .get();
+        String chapterUrl = mChapters.get(number).getUrl();
+        boolean hasNextPage =false;
+        Document currentDoc = null;
+        while (currentDoc == null || hasNextPage) {
+            try {
+                currentDoc = (mCharset != null && !mCharset.equals("")) ?
+                        Jsoup.parse(new URL(chapterUrl).openStream(), mCharset, chapterUrl)
+                        : Jsoup.parse(new URL(chapterUrl), 6 * 1000);
+            } catch (Exception e) {
+                //爬取章节信息
+                if (cookies != null && cookies.size() > 0) {
+                    currentDoc = Jsoup.connect(chapterUrl)
+                            .method(Connection.Method.GET)
+                            .headers(CrawlUtils.getHeader())
+                            .userAgent(USER_AGENT[2])
+                            .cookies(cookies)
+                            .timeout(TIME_OUT)
+                            .ignoreContentType(true)
+                            .get();
+                } else {
+                    currentDoc = Jsoup.connect(chapterUrl)
+                            .method(Connection.Method.GET)
+                            .headers(CrawlUtils.getHeader())
+                            .userAgent(USER_AGENT[0])
+                            .timeout(TIME_OUT)
+                            .ignoreContentType(true)
+                            .get();
+                }
             }
-
+            Elements e = null;
+            for (String cssQuery : Site.CHAPTER_CONTENT_CSS_QUERY) {
+                e = currentDoc.select(cssQuery);
+                if (!e.isEmpty()) {
+                    break;
+                }
+            }
+            if (e == null || e.isEmpty()) {
+                System.out.println("章节内容获取失败!");
+            }
+            //获取章节正文，并格式化。
+            String chapterContent = CrawlUtils.contentFormat(e.text());
+            chapterBuffer.append(chapterContent);
+            String nextPageUrl = nextUrl(currentDoc);
+            hasNextPage = (nextPageUrl != null && !nextPageUrl.equals(""));
+            chapterUrl = getChapterUrl(nextPageUrl);
         }
-        Elements e = chapterDoc.select("div#content");
-        //获取章节正文，并格式化。
-        String chapterContent = CrawlUtils.contentFormat(e.text());
-        chapterBuffer.append(chapterContent);
         chapterBuffer.append(System.getProperty("line.separator"));
-
         //获取章节信息对象
         Chapter chapter = mChapters.get(number);
         //将章节正文添加到章节信对象中
         chapter.setContent(chapterBuffer.toString());
     }
+
+
+    public String nextUrl(Document doc) {
+        String nextUrl = null;
+        Element element = null;
+
+        for (String cssQuery : Site.CHAPTER_NEXT_PAGE_CSS_QUERY) {
+            element = doc.select(cssQuery).first();
+            if (element != null) {
+                break;
+            }
+        }
+        if (element != null) {
+            String nextText = element.text();
+            if (nextText.trim().equals("下一页")) {
+                nextUrl = element.attr("href");
+            }
+        }
+        return nextUrl;
+    }
+
 
     @Override
     public String getNovelName() {
@@ -246,10 +275,9 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
             }
 
             private void parseDocFromUserAgent() throws Exception {
-                cookies = CrawlUtils.getCookies(url);
                 main = Jsoup.connect(url)
                         .userAgent(USER_AGENT[0])
-                        .cookies(cookies)
+                        .cookie("Cookie:","jieqiAdminLogin=2; cp_speed_8x=66; cp_fontsize_8x=16; cp_bg_8x=%23E7F4FE; __gads=ID=94543dd6129121cf-22c3cb0ffce40024:T=1697939140:RT=1697942619:S=ALNI_MbOp7UbJa-GVrf-gjV49xqt-mkgNA; __gpi=UID=00000c6cf0cb2419:T=1697939140:RT=1697942619:S=ALNI_MadGr1sZ_RQM1E_lokpxpmPTX-eXw; cf_clearance=r.kaSRBa.tsgip97cSWO1tII358OW_0ntXWrCHqcmRo-1697942641-0-1-66627d49.14685442.12bbc6a1-0.2.1697942641")
                         .timeout(TIME_OUT)
                         .get();
                 mDocuments = new GeneratingTXTDocuments(finalFilePath, getNovelName() + ".txt");
@@ -272,10 +300,10 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
     }
 
     private String getChapterUrl(String chapterUrl) {
-        if (chapterUrl.startsWith("http") || chapterUrl.startsWith("https")) {
+        if (chapterUrl == null || chapterUrl.equals("") || chapterUrl.startsWith("http") || chapterUrl.startsWith("https")) {
             return chapterUrl;
         } else {
-            return getRootUrl(url) + (chapterUrl.contains(getPath(url)) ? chapterUrl : getPath(url) + chapterUrl);
+            return getRootUrl(url) + (chapterUrl.contains(getPath(url))||chapterUrl.contains("/") ? chapterUrl : getPath(url) + chapterUrl);
         }
     }
 
@@ -298,7 +326,9 @@ public class CrawlNovelFromHtmlImp implements CrawlNovelFromHtml {
         public void run() {
             try {
                 //重定向到章节内容，获取章节正文
+                System.out.println("重定向到章节,获取" + mChapters.get(number).getChapterName() + "内容...");
                 dispatcher(number);
+                System.out.println("获取" + mChapters.get(number).getChapterName() + "内容完成");
             } catch (IOException e) {
                 System.out.println("获取章节:" + mChapters.get(number).getChapterName() + "---异常");
                 run();
